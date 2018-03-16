@@ -16,8 +16,8 @@
 		10A92F9D4B154B8C9FC3477D /* libRNCallKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CD0E3D7C3F049B5927F9CA3 /* libRNCallKit.a */; };
 		120FCB52205BAD6900F7D4F4 /* libRNVoipPushNotification.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 120FCB51205BAD6100F7D4F4 /* libRNVoipPushNotification.a */; };
 		120FCB55205BADED00F7D4F4 /* PushKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120FCB54205BADED00F7D4F4 /* PushKit.framework */; };
-		120FCB91205BB28B00F7D4F4 /* CallKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120FCB90205BB28B00F7D4F4 /* CallKit.framework */; };
-		120FCB93205BB29000F7D4F4 /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120FCB92205BB29000F7D4F4 /* Intents.framework */; };
+		120FCB91205BB28B00F7D4F4 /* CallKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120FCB90205BB28B00F7D4F4 /* CallKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		120FCB93205BB29000F7D4F4 /* Intents.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 120FCB92205BB29000F7D4F4 /* Intents.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		133E29F31AD74F7200F7D852 /* libRCTLinking.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 78C398B91ACF4ADC00677621 /* libRCTLinking.a */; };
 		139105C61AF99C1200B5F7CC /* libRCTSettings.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 139105C11AF99BAD00B5F7CC /* libRCTSettings.a */; };
 		139FDEF61B0652A700C62182 /* libRCTWebSocket.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 139FDEF41B06529B00C62182 /* libRCTWebSocket.a */; };
@@ -1351,6 +1351,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = RG9LW688ZP;
+				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../node_modules/react-native-pjsip/ios/RTCPjSip/**",
@@ -1358,7 +1359,7 @@
 					"$(SRCROOT)/../node_modules/react-native-callkit/ios/RNCallKit",
 				);
 				INFOPLIST_FILE = sip_test/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -1384,7 +1385,7 @@
 					"$(SRCROOT)/../node_modules/react-native-callkit/ios/RNCallKit",
 				);
 				INFOPLIST_FILE = sip_test/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"$(inherited)",

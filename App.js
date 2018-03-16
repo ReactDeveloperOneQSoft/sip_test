@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions } from 'react-native';
+import { Platform, StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions, AsyncStorage } from 'react-native';
 import { Endpoint } from 'react-native-pjsip';
 import uuidv4 from 'uuid/v4';
 import VoipPushNotification from 'react-native-voip-push-notification';
@@ -31,39 +31,43 @@ export default class App extends Component<Props> {
             iosCallkitUUID: ''
         };
 
-        // Initialise RNCallKit
-        let options = {
-            appName: 'set_test',
-            imageName: 'AppIcon'
-        };
-        try {
-            RNCallKit.setup(options);
-        } catch (err) {
-            console.log('error:', err.message);
-        }
+        if (Platform.OS === 'ios') {
+            // Initialise RNCallKit
+            let options = {
+                appName: 'set_test',
+                imageName: 'AppIcon'
+            };
+            try {
+                RNCallKit.setup(options);
+            } catch (err) {
+                console.log('error:', err.message);
+            }
 
-        // Add RNCallKit Events
-        RNCallKit.addEventListener('didReceiveStartCallAction', this.onRNCallKitDidReceiveStartCallAction);
-        RNCallKit.addEventListener('answerCall', this.onRNCallKitPerformAnswerCallAction);
-        RNCallKit.addEventListener('endCall', this.onRNCallKitPerformEndCallAction);
-        RNCallKit.addEventListener('didActivateAudioSession', this.onRNCallKitDidActivateAudioSession);
+            // Add RNCallKit Events
+            RNCallKit.addEventListener('didReceiveStartCallAction', this.onRNCallKitDidReceiveStartCallAction);
+            RNCallKit.addEventListener('answerCall', this.onRNCallKitPerformAnswerCallAction);
+            RNCallKit.addEventListener('endCall', this.onRNCallKitPerformEndCallAction);
+            RNCallKit.addEventListener('didActivateAudioSession', this.onRNCallKitDidActivateAudioSession);
+        }
     }
 
     componentWillMount() {
-        // or anywhere which is most comfortable and appropriate for you
-        VoipPushNotification.requestPermissions(); // required
+        if (Platform.OS === 'ios') {
+            // or anywhere which is most comfortable and appropriate for you
+            VoipPushNotification.requestPermissions(); // required
 
-        VoipPushNotification.addEventListener('register', token => {
-            // send token to your apn provider server
-            console.log('Pushkit token: ', token);
-            this.pushkitToken = token;
-        });
+            VoipPushNotification.addEventListener('register', token => {
+                // send token to your apn provider server
+                console.log('Pushkit token: ', token);
+                this.pushkitToken = token;
+                AsyncStorage.setItem('voipToken', token);
+            });
 
-        VoipPushNotification.addEventListener('notification', notification => {
-            // register your VoIP client, show local notification, etc.
-            // e.g.
+            VoipPushNotification.addEventListener('notification', notification => {
+                // register your VoIP client, show local notification, etc.
+                // e.g.
 
-            /* there is a boolean constant exported by this module called
+                /* there is a boolean constant exported by this module called
          * 
          * wakeupByPush
          * 
@@ -72,28 +76,29 @@ export default class App extends Component<Props> {
          *
          * e.g.
          */
-            if (VoipPushNotification.wakeupByPush) {
-                // do something...
+                if (VoipPushNotification.wakeupByPush) {
+                    // do something...
 
-                // remember to set this static variable to false
-                // since the constant are exported only at initialization time
-                // and it will keep the same in the whole app
-                VoipPushNotification.wakeupByPush = false;
-            }
+                    // remember to set this static variable to false
+                    // since the constant are exported only at initialization time
+                    // and it will keep the same in the whole app
+                    VoipPushNotification.wakeupByPush = false;
+                }
 
-            /**
-             * Local Notification Payload
-             *
-             * - `alertBody` : The message displayed in the notification alert.
-             * - `alertAction` : The "action" displayed beneath an actionable notification. Defaults to "view";
-             * - `soundName` : The sound played when the notification is fired (optional).
-             * - `category`  : The category of this notification, required for actionable notifications (optional).
-             * - `userInfo`  : An optional object containing additional notification data.
-             */
-            VoipPushNotification.presentLocalNotification({
-                alertBody: 'hello! ' + notification.getMessage()
+                /**
+                 * Local Notification Payload
+                 *
+                 * - `alertBody` : The message displayed in the notification alert.
+                 * - `alertAction` : The "action" displayed beneath an actionable notification. Defaults to "view";
+                 * - `soundName` : The sound played when the notification is fired (optional).
+                 * - `category`  : The category of this notification, required for actionable notifications (optional).
+                 * - `userInfo`  : An optional object containing additional notification data.
+                 */
+                VoipPushNotification.presentLocalNotification({
+                    alertBody: 'hello! ' + notification.getMessage()
+                });
             });
-        });
+        }
     }
 
     async componentDidMount() {
