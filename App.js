@@ -3,6 +3,7 @@ import { Platform, StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensio
 import { Endpoint } from 'react-native-pjsip';
 import uuidv4 from 'uuid/v4';
 import VoipPushNotification from 'react-native-voip-push-notification';
+import RNCallKit from 'react-native-callkit';
 
 import IncomingCall from './src/components/incomingcall';
 import PreviewVideo from './src/components/preview-video';
@@ -26,8 +27,26 @@ export default class App extends Component<Props> {
             destination: null,
             incomingCall: null,
             incomingCallVisible: false,
-            previewVideoVisible: false
+            previewVideoVisible: false,
+            iosCallkitUUID: ''
         };
+
+        // Initialise RNCallKit
+        let options = {
+            appName: 'set_test',
+            imageName: 'AppIcon'
+        };
+        try {
+            RNCallKit.setup(options);
+        } catch (err) {
+            console.log('error:', err.message);
+        }
+
+        // Add RNCallKit Events
+        RNCallKit.addEventListener('didReceiveStartCallAction', this.onRNCallKitDidReceiveStartCallAction);
+        RNCallKit.addEventListener('answerCall', this.onRNCallKitPerformAnswerCallAction);
+        RNCallKit.addEventListener('endCall', this.onRNCallKitPerformEndCallAction);
+        RNCallKit.addEventListener('didActivateAudioSession', this.onRNCallKitDidActivateAudioSession);
     }
 
     componentWillMount() {
@@ -132,6 +151,75 @@ export default class App extends Component<Props> {
                 call
             });
         }); // Android only
+    }
+
+    onRNCallKitDidReceiveStartCallAction(data) {
+        /*
+       * Your normal start call action
+       *
+       * ...
+       *
+       */
+
+        let _uuid = uuidv4();
+        RNCallKit.startCall(_uuid, data.handle);
+        this.setState({
+            iosCallkitUUID: _uuid
+        });
+    }
+
+    onRNCallKitPerformAnswerCallAction(data) {
+        /* You will get this event when the user answer the incoming call
+       *
+       * Try to do your normal Answering actions here
+       *
+       * e.g. this.handleAnswerCall(data.callUUID);
+       */
+    }
+
+    onRNCallKitPerformEndCallAction(data) {
+        /* You will get this event when the user finish the incoming/outgoing call
+       *
+       * Try to do your normal Hang Up actions here
+       *
+       * e.g. this.handleHangUpCall(data.callUUID);
+       */
+    }
+
+    onRNCallKitDidActivateAudioSession(data) {
+        /* You will get this event when the the AudioSession has been activated by **RNCallKit**,
+       * you might want to do following things when receiving this event:
+       *
+       * - Start playing ringback if it is an outgoing call
+       */
+    }
+
+    // This is a fake function where you can receive incoming call notifications
+    onIncomingCall() {
+        // Store the generated uuid somewhere
+        // You will need this when calling RNCallKit.endCall()
+        let _uuid = uuidv4();
+        RNCallKit.displayIncomingCall(_uuid, '886900000000');
+        this.setState({
+            iosCallkitUUID: _uuid
+        });
+    }
+
+    // This is a fake function where you make outgoing calls
+    onOutgoingCall() {
+        // Store the generated uuid somewhere
+        // You will need this when calling RNCallKit.endCall()
+        let _uuid = uuidv4();
+        RNCallKit.startCall(_uuid, '886900000000');
+        this.setState({
+            iosCallkitUUID: _uuid
+        });
+    }
+
+    // This is a fake function where you hang up calls
+    onHangUpCall() {
+        // get the _uuid you stored earlier
+        RNCallKit.endCall(this.state.iosCallkitUUID);
     }
 
     createAccount(endpoint) {
@@ -340,7 +428,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         textAlign: 'center',
         margin: 10
-    },  
+    },
     textinput: {
         width: '100%',
         height: 40,
