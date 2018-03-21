@@ -17,8 +17,9 @@ export default class PreviewVideo extends Component {
     componentDidMount() {}
 
     render() {
-        const { call } = this.props;
+        const { call, type } = this.props;
         const videoMedia = call ? call.getMedia().find(media => media['type'] === 'PJMEDIA_TYPE_VIDEO') : null;
+        const isVideo = type === 'video';
         console.log('Preview video: ', videoMedia);
         return (
             <Modal
@@ -32,23 +33,49 @@ export default class PreviewVideo extends Component {
                 visible={this.props.visible}
             >
                 <View style={styles.container}>
-                    <RemoteVideoView
-                        style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: '#333' }}
-                        windowId={videoMedia ? videoMedia.videoStream.windowId : ''}
-                        objectFit="contain"
-                    />
-                    <PreviewVideoView
-                        style={{
-                            position: 'absolute',
-                            bottom: 10,
-                            right: 10,
-                            width: 96,
-                            height: 96,
-                            backgroundColor: '#000'
-                        }}
-                        deviceId={videoMedia ? videoMedia.videoStream.captureDevice : ''}
-                        objectFit="contain"
-                    />
+                    {isVideo && videoMedia && videoMedia.videoStream && videoMedia.videoStream.windowId >= 0 ? (
+                        <RemoteVideoView
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                backgroundColor: '#333'
+                            }}
+                            windowId={videoMedia ? videoMedia.videoStream.windowId : ''}
+                            objectFit="contain"
+                        />
+                    ) : (
+                        <View
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                backgroundColor: 'white',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <Text>Audio Call</Text>
+                        </View>
+                    )}
+                    {isVideo && videoMedia && videoMedia.videoStream && videoMedia.videoStream.captureDevice >= 0 ? (
+                        <PreviewVideoView
+                            style={{
+                                position: 'absolute',
+                                bottom: 10,
+                                right: 10,
+                                width: 96,
+                                height: 96,
+                                backgroundColor: '#000'
+                            }}
+                            deviceId={videoMedia ? videoMedia.videoStream.captureDevice : ''}
+                            objectFit="contain"
+                        />
+                    ) : null}
 
                     <View
                         style={{

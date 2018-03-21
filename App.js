@@ -19,10 +19,13 @@ export default class App extends Component<Props> {
         super(props);
 
         this.state = {
-            name: '',
-            username: '',
-            password: 'admin.1234',
-            domain: 'sip.antisip.com',
+            name: null,
+            username: '4777519303',
+            password: 'r9smvnvwv9jpvn',
+            domain: 'cloudstage.service.ipallover.net',
+            // username: 'tmhoang1904',
+            // password: 'admin.1234',
+            // domain: 'arilliance.onsip.com',
             account: null,
             destination: null,
             incomingCall: null,
@@ -106,9 +109,11 @@ export default class App extends Component<Props> {
         let state = await this.endpoint.start();
         let { accounts, calls } = state;
 
+        console.log(accounts);
+
         if (accounts) {
             for (let account of accounts) {
-                if (account) {
+                if (account && account._registration && account._registration._statusText === 'OK') {
                     this.setState({ account });
                     return;
                 }
@@ -234,13 +239,14 @@ export default class App extends Component<Props> {
             username: this.state.username,
             domain: this.state.domain,
             password: this.state.password,
-            proxy: null,
-            transport: null, // Default TCP
+            // proxy: '217.182.190.105:5060;transport=udp',
+            // port: 5060,
+            transport: 'UDP', // Default TCP
             regServer: null, // Default wildcard
-            regTimeout: 2592000, // Default 3600
-            regHeaders: {
-                'X-Custom-Header': 'Value'
-            }
+            regTimeout: null, // Default 3600
+            // regHeaders: {
+            //     'X-Custom-Header': 'Value'
+            // }
             // regContactParams: ';unique-device-token-id=' + uuid
         };
         let regContactParams = '';
@@ -253,19 +259,25 @@ export default class App extends Component<Props> {
         }
         configuration['regContactParams'] = regContactParams;
         console.log(configuration);
-        endpoint.createAccount(configuration).then(account => {
-            console.log('Account created', account);
-        });
+        endpoint
+            .createAccount(configuration)
+            .then(account => {
+                console.log('Account created', account);
+            })
+            .catch(err => {
+                console.log(err);
+            });
     }
 
-    async makeCall(endpoint, account, destination) {
+    makeCall(endpoint, account, destination) {
         let callSetings = {
             headers: {
                 'P-Assserted-Identity': 'Header example',
                 'X-UA': 'React native'
             },
             videoCount: 1,
-            audioCount: 1
+            audioCount: 1,
+            type: 'audio'
         };
 
         const messageSettings = {
@@ -278,13 +290,21 @@ export default class App extends Component<Props> {
             body: '...'
         };
 
-        let call = await endpoint.makeCall(account, destination, callSetings);
-        call.getId(); // Use this id to detect changes and make actions
+        endpoint
+            .makeCall(account, destination, callSetings)
+            .then(call => {
+                call.getId(); // Use this id to detect changes and make actions
 
-        console.log('Make call: ', call);
-        this.setState({
-            call
-        });
+                console.log('Make call: ', call);
+                let type = callSetings['type'];
+                this.setState({
+                    call,
+                    type
+                });
+            })
+            .catch(err => {
+                console.log(err);
+            });
     }
 
     answerCall(endpoint, incomingCall) {
@@ -322,6 +342,7 @@ export default class App extends Component<Props> {
         const { account } = this.state;
         let isAccountValid =
             account && account._registration && account._registration._statusText === 'OK' ? true : false;
+        // let isAccountValid = account && account._registration && account._registration ? true : false;
         return (
             <View style={styles.container}>
                 {isAccountValid === false ? (
@@ -410,6 +431,7 @@ export default class App extends Component<Props> {
                 <PreviewVideo
                     visible={this.state.previewVideoVisible}
                     call={this.state.call}
+                    type={this.state.type}
                     onEndCallPressed={call => {
                         this.endCall(this.endpoint, call);
                     }}
