@@ -20,12 +20,12 @@ export default class App extends Component<Props> {
 
         this.state = {
             name: null,
-            username: '4777519303',
-            password: 'r9smvnvwv9jpvn',
-            domain: 'cloudstage.service.ipallover.net',
-            // username: 'tmhoang1904',
-            // password: 'admin.1234',
-            // domain: 'arilliance.onsip.com',
+            // username: '4777519303',
+            // password: 'r9smvnvwv9jpvn',
+            // domain: 'cloudstage.service.ipallover.net',
+            username: '4777519304',
+            password: 'RyV2bmWkS6RWz74Q',
+            domain: 'webrtc.lumiero.com',
             account: null,
             destination: null,
             incomingCall: null,
@@ -101,6 +101,12 @@ export default class App extends Component<Props> {
                     alertBody: 'hello! ' + notification.getMessage()
                 });
             });
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.endpoint && this.state.account) {
+            this.endpoint.deleteAccount(this.state.account);
         }
     }
 
@@ -243,7 +249,7 @@ export default class App extends Component<Props> {
             // port: 5060,
             transport: 'UDP', // Default TCP
             regServer: null, // Default wildcard
-            regTimeout: null, // Default 3600
+            regTimeout: null // Default 3600
             // regHeaders: {
             //     'X-Custom-Header': 'Value'
             // }
@@ -290,21 +296,25 @@ export default class App extends Component<Props> {
             body: '...'
         };
 
-        endpoint
-            .makeCall(account, destination, callSetings)
-            .then(call => {
-                call.getId(); // Use this id to detect changes and make actions
+        this.endCall(this.endpoint, this.state.call);
 
-                console.log('Make call: ', call);
-                let type = callSetings['type'];
-                this.setState({
-                    call,
-                    type
+        setTimeout(() => {
+            endpoint
+                .makeCall(account, destination, callSetings)
+                .then(call => {
+                    call.getId(); // Use this id to detect changes and make actions
+
+                    console.log('Make call: ', call);
+                    let type = callSetings['type'];
+                    this.setState({
+                        call,
+                        type
+                    });
+                })
+                .catch(err => {
+                    console.log(err);
                 });
-            })
-            .catch(err => {
-                console.log(err);
-            });
+        }, 500);
     }
 
     answerCall(endpoint, incomingCall) {
@@ -415,6 +425,29 @@ export default class App extends Component<Props> {
                             }}
                         >
                             <Text>Make Call</Text>
+                        </TouchableOpacity>
+
+                        <View style={{ marginTop: 10 }} />
+                        <TouchableOpacity
+                            onPress={() => {
+                                if (this.endpoint && this.state.account) {
+                                    this.endpoint
+                                        .deleteAccount(this.state.account)
+                                        .then(result => {
+                                            console.log('Lougout: ', result);
+                                            if (result) {
+                                                this.setState({
+                                                    account: null
+                                                });
+                                            }
+                                        })
+                                        .catch(err => {
+                                            console.log(err);
+                                        });
+                                }
+                            }}
+                        >
+                            <Text>Logout</Text>
                         </TouchableOpacity>
                     </View>
                 )}
