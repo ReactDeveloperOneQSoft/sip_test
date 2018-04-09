@@ -19,7 +19,7 @@ export default class PreviewVideo extends Component {
     render() {
         const { call, type } = this.props;
         const videoMedia = call ? call.getMedia().find(media => media['type'] === 'PJMEDIA_TYPE_VIDEO') : null;
-        const isVideo = type === 'video';
+        const isVideo = videoMedia ? true : false;
         console.log('Preview video: ', videoMedia);
         return (
             <Modal

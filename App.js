@@ -23,8 +23,10 @@ export default class App extends Component<Props> {
             // username: '4777519303',
             // password: 'r9smvnvwv9jpvn',
             // domain: 'cloudstage.service.ipallover.net',
-            username: '4777519304',
-            password: 'RyV2bmWkS6RWz74Q',
+            // username: '4777519304',
+            // password: 'RyV2bmWkS6RWz74Q',
+            username: '4777519305',
+            password: 'kdtQjxUt3n37RkHk',
             domain: 'webrtc.lumiero.com',
             account: null,
             destination: null,
@@ -148,10 +150,10 @@ export default class App extends Component<Props> {
         });
         this.endpoint.on('call_changed', call => {
             console.log('Call changed: ', call);
-            const videoMedia = call ? call.getMedia().find(media => media['type'] === 'PJMEDIA_TYPE_VIDEO') : null;
+            // const videoMedia = call ? call.getMedia().find(media => media['type'] === 'PJMEDIA_TYPE_VIDEO' || media['type'] === 'PJMEDIA_TYPE_AUDIO') : null;
             this.setState({
                 call,
-                previewVideoVisible: videoMedia ? true : false
+                previewVideoVisible: true
             });
         });
         this.endpoint.on('call_terminated', call => {
@@ -281,7 +283,7 @@ export default class App extends Component<Props> {
                 'P-Assserted-Identity': 'Header example',
                 'X-UA': 'React native'
             },
-            videoCount: 1,
+            videoCount: 0,
             audioCount: 1,
             type: 'audio'
         };
@@ -338,14 +340,16 @@ export default class App extends Component<Props> {
             previewVideoVisible: false
         });
 
-        endpoint
-            .hangupCall(call)
-            .then(data => {
-                console.log('End call: ', data);
-            })
-            .catch(err => {
-                console.log(err);
-            });
+        if (endpoint && call) {
+            endpoint
+                .hangupCall(call)
+                .then(data => {
+                    console.log('End call: ', data);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
     }
 
     render() {
