@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import { Platform, StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions, AsyncStorage } from 'react-native';
-import { Endpoint } from 'react-native-pjsip';
 import uuidv4 from 'uuid/v4';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import RNCallKit from 'react-native-callkit';
 
 import IncomingCall from './src/components/incomingcall';
 import PreviewVideo from './src/components/preview-video';
+
+import { registerAccount, answerCall, makeOutgoingCall, endCall } from './src/libs/jssip';
 
 type Props = {};
 const getAddress = username => {
@@ -112,64 +113,7 @@ export default class App extends Component<Props> {
         }
     }
 
-    async componentDidMount() {
-        this.endpoint = new Endpoint();
-        let state = await this.endpoint.start();
-        let { accounts, calls } = state;
-
-        console.log(accounts);
-
-        if (accounts) {
-            for (let account of accounts) {
-                if (account && account._registration && account._registration._statusText === 'OK') {
-                    this.setState({ account });
-                    return;
-                }
-            }
-        }
-
-        console.log(state);
-
-        // Subscribe to endpoint events
-        this.endpoint.on('registration_changed', account => {
-            console.log('Registration changed: ', account);
-
-            this.setState({
-                account
-            });
-        });
-        this.endpoint.on('connectivity_changed', online => {
-            console.log('Connect changed: ', online);
-        });
-        this.endpoint.on('call_received', call => {
-            console.log('Call received: ', call);
-            this.setState({
-                incomingCall: call,
-                incomingCallVisible: true
-            });
-        });
-        this.endpoint.on('call_changed', call => {
-            console.log('Call changed: ', call);
-            // const videoMedia = call ? call.getMedia().find(media => media['type'] === 'PJMEDIA_TYPE_VIDEO' || media['type'] === 'PJMEDIA_TYPE_AUDIO') : null;
-            this.setState({
-                call,
-                previewVideoVisible: true
-            });
-        });
-        this.endpoint.on('call_terminated', call => {
-            console.log('Call terminated: ', call);
-            this.setState({
-                call: null,
-                previewVideoVisible: false
-            });
-        });
-        this.endpoint.on('call_screen_locked', call => {
-            console.log('Call screen locked: ', call);
-            this.setState({
-                call
-            });
-        }); // Android only
-    }
+    async componentDidMount() {}
 
     onRNCallKitDidReceiveStartCallAction(data) {
         /*
@@ -240,7 +184,7 @@ export default class App extends Component<Props> {
         RNCallKit.endCall(this.state.iosCallkitUUID);
     }
 
-    createAccount(endpoint) {
+    createAccount() {
         let uuid = uuidv4();
         let configuration = {
             name: this.state.name,
@@ -251,11 +195,15 @@ export default class App extends Component<Props> {
             // port: 5060,
             transport: 'UDP', // Default TCP
             regServer: null, // Default wildcard
-            regTimeout: null // Default 3600
+            regTimeout: null, // Default 3600
             // regHeaders: {
             //     'X-Custom-Header': 'Value'
             // }
-            // regContactParams: ';unique-device-token-id=' + uuid
+            // regContactParams: ';unique-device-token-id=' + uuid,
+            log: { level: 'debug' },
+            debug: true,
+            session_timers: true,
+            use_preloaded_route: false
         };
         let regContactParams = '';
         if (Platform.OS === 'ios') {
@@ -267,14 +215,8 @@ export default class App extends Component<Props> {
         }
         configuration['regContactParams'] = regContactParams;
         console.log(configuration);
-        endpoint
-            .createAccount(configuration)
-            .then(account => {
-                console.log('Account created', account);
-            })
-            .catch(err => {
-                console.log(err);
-            });
+
+        registerAccount(configuration);
     }
 
     makeCall(endpoint, account, destination) {
@@ -297,59 +239,17 @@ export default class App extends Component<Props> {
             contentType: '...',
             body: '...'
         };
-
-        this.endCall(this.endpoint, this.state.call);
-
-        setTimeout(() => {
-            endpoint
-                .makeCall(account, destination, callSetings)
-                .then(call => {
-                    call.getId(); // Use this id to detect changes and make actions
-
-                    console.log('Make call: ', call);
-                    let type = callSetings['type'];
-                    this.setState({
-                        call,
-                        type
-                    });
-                })
-                .catch(err => {
-                    console.log(err);
-                });
-        }, 500);
     }
 
     answerCall(endpoint, incomingCall) {
         let options = {};
         this.setState({ incomingCallVisible: false });
-        endpoint
-            .answerCall(incomingCall, options)
-            .then(data => {
-                console.log('Answer call: ', data);
-                // this.setState({
-                //     previewVideoVisible: true
-                // });
-            })
-            .catch(err => {
-                console.log(err);
-            });
     }
 
     endCall(endpoint, call) {
         this.setState({
             previewVideoVisible: false
         });
-
-        if (endpoint && call) {
-            endpoint
-                .hangupCall(call)
-                .then(data => {
-                    console.log('End call: ', data);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
-        }
     }
 
     render() {

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Platform, Text, View, Modal, Dimensions, TouchableOpacity } from 'react-native';
-import { Endpoint } from 'react-native-pjsip';
 import uuidv4 from 'uuid/v4';
 
 import styles from './styles';
